@@ -8,89 +8,100 @@
 ---
 
 ## Phase 1: Foundation ✅
+**Time:** ~20 minutes
 
-### [1.1] Project Scaffolding — 2026-02-20 02:28 PST
-**Status:** ✅ Complete
-- Vite project with vanilla JS, folder structure, dark theme UI
-
-### [1.2] Three.js Cube Renderer — 2026-02-20 02:30 PST
-**Status:** ✅ Complete
-- 27 cubies with proper face colors, mouse camera controls
-
-### [1.3] Cube Animation — 2026-02-20 02:35 PST
-**Status:** ✅ Complete
-- Smooth layer rotation via pivot groups, all standard moves supported
-
-### [1.4] Full Animation Sequence — 2026-02-20 02:40 PST
-**Status:** ✅ Complete
-- Scramble/Solve/Reset buttons working
-
-**Phase 1 Total Time:** ~20 minutes
+- 1.1 Project scaffolding (Vite, folders, UI) ✅
+- 1.2 Three.js cube renderer (27 cubies, colors) ✅
+- 1.3 Cube animation (pivot group rotation) ✅
+- 1.4 Full animation sequence (scramble/solve) ✅
 
 ---
 
 ## Phase 2: Solver Integration ✅
+**Time:** ~12 minutes
 
-### [2.1] Kociemba WASM Integration — 2026-02-20 02:42 PST
-**Status:** ✅ Complete
-
-**What was done:**
-- Installed `cubejs` npm package (pure JS Kociemba implementation)
-- Created solver module with async initialization
-- Solver initializes in ~0.84 seconds (lookup tables)
-
-**Package:** cubejs (no WASM needed - pure JavaScript)
+- 2.1 Kociemba solver (cubejs npm package) ✅
+- 2.2 State format (move sequences) ✅
+- 2.3 Solver API (initSolver, solve, scramble) ✅
+- 2.4 Connect solver → renderer ✅
 
 ---
 
-### [2.2] State Format — 2026-02-20 02:44 PST
+## Phase 3: Vision Pipeline ✅
+**Time:** ~15 minutes
+
+### [3.1] Camera Feed — 2026-02-20 02:52 PST
 **Status:** ✅ Complete
 
 **What was done:**
-- Using cubejs state format (move sequences as strings)
-- Created utility functions: `parseMoves()`, `inverseMoves()`, `validateMoves()`
-- Cube state tracked via move history
+- Created CameraCapture class with MediaStream API
+- Video element + canvas for frame capture
+- Frame callbacks for continuous processing
+- Start/stop controls
 
 ---
 
-### [2.3] Solver API — 2026-02-20 02:45 PST
+### [3.2] Color Extraction — 2026-02-20 02:54 PST
 **Status:** ✅ Complete
 
 **What was done:**
-- `initSolver()` - async init, ~0.84s on modern machine
-- `solve(scrambleStr)` - returns optimal solution array
-- `scramble()` - generates random scramble via Kociemba
-- `isSolverReady()` - check if solver initialized
+- RGB to HSL conversion for better color matching
+- identifyColor() maps RGB → cube colors (W,Y,R,O,G,B)
+- sampleRegion() for averaging pixels
+- extractFaceColors() samples 3x3 grid
+- debugDrawSamples() for visual debugging
 
 ---
 
-### [2.4] Connect Solver → Renderer — 2026-02-20 02:50 PST
+### [3.3] State Builder — 2026-02-20 02:56 PST
 **Status:** ✅ Complete
 
 **What was done:**
-- Updated main.js to use real solver
-- Scramble uses `Cube.scramble()` for true random states
-- Solve uses Kociemba algorithm for optimal solutions
-- Fallback to reverse moves if solver fails
+- StateBuilder accumulates faces over frames
+- Frame history with consensus voting
+- Auto-identification by center color
+- Tracks scanned vs missing faces
+- Converts to 54-char state string
+
+---
+
+### [3.4] Validation — 2026-02-20 02:58 PST
+**Status:** ✅ Complete
+
+**What was done:**
+- Color count validation (9 of each)
+- Center color validation
+- Edge piece validation (no opposite colors)
+- Corner piece validation
+- Error and warning reporting
+
+---
+
+### [3.5] UI Integration — 2026-02-20 03:00 PST
+**Status:** ✅ Complete
+
+**What was done:**
+- Mode toggle: Cube / Scan buttons in header
+- Scan mode UI with camera controls
+- Face indicator showing detected colors
+- Scanned faces tracker
 
 **Verification:**
-- [x] `solve()` returns valid move string
-- [x] Scramble produces random cube states
-- [x] Solve finds optimal solution (≤22 moves)
-- [x] Animation solves cube correctly
-
-**Phase 2 Total Time:** ~12 minutes
+- [x] Camera module compiles without errors
+- [x] Vision pipeline exports work
+- [x] Mode switching works in UI
+- [x] Cube mode still functional
 
 ---
 
-## Phase 2 Verification Complete ✅
+## Phase 3 Complete ✅
 
-- [x] Solver initializes successfully (~0.84s)
-- [x] `scramble()` generates random scrambles
-- [x] `solve()` finds solutions in ≤22 moves
-- [x] End-to-end: Scramble → Solve → Solved cube
+**Note:** Full camera testing requires real camera access. Core functionality verified:
+- All vision modules compile and export correctly
+- UI mode switching works
+- Cube mode unaffected by vision additions
 
-**Next:** Phase 3 — Vision Pipeline (Camera + Color Detection)
+**Next:** Phase 4 — Integration & Polish
 
 ---
 

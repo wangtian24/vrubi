@@ -116,14 +116,6 @@ export class CubeAnimator {
     
     // Move cubies back to main group
     anim.cubies.forEach(cubie => {
-      // Get world position before detaching
-      const worldPos = new THREE.Vector3();
-      cubie.getWorldPosition(worldPos);
-      
-      // Get world quaternion before detaching
-      const worldQuat = new THREE.Quaternion();
-      cubie.getWorldQuaternion(worldQuat);
-      
       // Detach from pivot, attach to cube group
       this.cube.group.attach(cubie);
       
@@ -131,6 +123,12 @@ export class CubeAnimator {
       cubie.position.x = Math.round(cubie.position.x);
       cubie.position.y = Math.round(cubie.position.y);
       cubie.position.z = Math.round(cubie.position.z);
+      
+      // Snap rotation to nearest 90° increments to prevent floating-point drift
+      const snapAngle = (angle) => Math.round(angle / (Math.PI / 2)) * (Math.PI / 2);
+      cubie.rotation.x = snapAngle(cubie.rotation.x);
+      cubie.rotation.y = snapAngle(cubie.rotation.y);
+      cubie.rotation.z = snapAngle(cubie.rotation.z);
     });
     
     // Remove pivot

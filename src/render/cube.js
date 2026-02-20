@@ -56,12 +56,12 @@ export class RubiksCube {
     
     // Determine colors for each face based on position
     const materials = [
-      new THREE.MeshPhongMaterial({ color: x === 1 ? COLORS.R : COLORS.X }),  // +X (Right)
-      new THREE.MeshPhongMaterial({ color: x === -1 ? COLORS.O : COLORS.X }), // -X (Left)
-      new THREE.MeshPhongMaterial({ color: y === 1 ? COLORS.W : COLORS.X }),  // +Y (Up)
-      new THREE.MeshPhongMaterial({ color: y === -1 ? COLORS.Y : COLORS.X }), // -Y (Down)
-      new THREE.MeshPhongMaterial({ color: z === 1 ? COLORS.G : COLORS.X }),  // +Z (Front)
-      new THREE.MeshPhongMaterial({ color: z === -1 ? COLORS.B : COLORS.X }), // -Z (Back)
+      new THREE.MeshPhongMaterial({ color: x === 1 ? COLORS.R : COLORS.X, side: THREE.DoubleSide }),  // +X (Right)
+      new THREE.MeshPhongMaterial({ color: x === -1 ? COLORS.O : COLORS.X, side: THREE.DoubleSide }), // -X (Left)
+      new THREE.MeshPhongMaterial({ color: y === 1 ? COLORS.W : COLORS.X, side: THREE.DoubleSide }),  // +Y (Up)
+      new THREE.MeshPhongMaterial({ color: y === -1 ? COLORS.Y : COLORS.X, side: THREE.DoubleSide }), // -Y (Down)
+      new THREE.MeshPhongMaterial({ color: z === 1 ? COLORS.G : COLORS.X, side: THREE.DoubleSide }),  // +Z (Front)
+      new THREE.MeshPhongMaterial({ color: z === -1 ? COLORS.B : COLORS.X, side: THREE.DoubleSide }), // -Z (Back)
     ];
     
     const cubie = new THREE.Mesh(geometry, materials);

@@ -24,6 +24,9 @@
       padding: 1rem 2rem;
       background: #16213e;
       border-bottom: 1px solid #0f3460;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     
     header h1 {
@@ -36,21 +39,120 @@
       opacity: 0.7;
     }
     
+    .mode-toggle {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .mode-btn {
+      background: #0f3460;
+      color: white;
+      border: 1px solid #0f3460;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+    
+    .mode-btn.active {
+      background: #e94560;
+      border-color: #e94560;
+    }
+    
+    .mode-btn:hover:not(.active) {
+      background: #16213e;
+    }
+    
     main {
       flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 2rem;
+      position: relative;
     }
     
-    #cube-container {
+    .view-container {
       width: 100%;
       max-width: 600px;
       aspect-ratio: 1;
       background: #0f0f1a;
       border-radius: 8px;
       overflow: hidden;
+      position: relative;
+    }
+    
+    #cube-container {
+      width: 100%;
+      height: 100%;
+    }
+    
+    #camera-container {
+      width: 100%;
+      height: 100%;
+      display: none;
+      position: relative;
+    }
+    
+    #camera-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    #camera-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .face-indicator {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(22, 33, 62, 0.9);
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    
+    .face-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-bottom: 0.5rem;
+    }
+    
+    .face-cell {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .scanned-faces {
+      display: flex;
+      gap: 4px;
+      margin-top: 0.5rem;
+    }
+    
+    .scanned-face {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      opacity: 0.3;
+    }
+    
+    .scanned-face.done {
+      opacity: 1;
     }
     
     #controls {
@@ -97,29 +199,74 @@
       border-radius: 4px;
       font-size: 0.875rem;
       display: none;
+      z-index: 100;
     }
     
     #status.visible {
       display: block;
     }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    /* Color classes */
+    .color-W { background: #ffffff; color: #000; }
+    .color-Y { background: #ffff00; color: #000; }
+    .color-R { background: #ff0000; }
+    .color-O { background: #ff8c00; }
+    .color-G { background: #00ff00; color: #000; }
+    .color-B { background: #0000ff; }
+    .color-X { background: #333333; }
   </style>
 </head>
 <body>
   <header>
-    <h1>🎲 VRubi</h1>
-    <p>Video-to-Rubik's Cube Solver</p>
+    <div>
+      <h1>🎲 VRubi</h1>
+      <p>Video-to-Rubik's Cube Solver</p>
+    </div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-cube">🎮 Cube</button>
+      <button class="mode-btn" id="mode-scan">📷 Scan</button>
+    </div>
   </header>
   
   <main>
-    <div id="cube-container"></div>
+    <div class="view-container">
+      <div id="cube-container"></div>
+      <div id="camera-container">
+        <canvas id="camera-overlay"></canvas>
+        <div class="face-indicator" id="face-indicator">
+          <div class="face-grid" id="detected-face">
+            <!-- 9 cells for detected colors -->
+          </div>
+          <div class="scanned-faces" id="scanned-faces">
+            <div class="scanned-face color-W">U</div>
+            <div class="scanned-face color-R">R</div>
+            <div class="scanned-face color-G">F</div>
+            <div class="scanned-face color-Y">D</div>
+            <div class="scanned-face color-O">L</div>
+            <div class="scanned-face color-B">B</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
   
   <div id="status"></div>
   
   <div id="controls">
-    <button id="btn-scramble">🔀 Scramble</button>
-    <button id="btn-solve">✨ Solve</button>
-    <button id="btn-reset">🔄 Reset</button>
+    <div id="cube-controls">
+      <button id="btn-scramble">🔀 Scramble</button>
+      <button id="btn-solve">✨ Solve</button>
+      <button id="btn-reset">🔄 Reset</button>
+    </div>
+    <div id="scan-controls" class="hidden">
+      <button id="btn-start-camera">📷 Start Camera</button>
+      <button id="btn-capture" disabled>📸 Capture Face</button>
+      <button id="btn-use-state" disabled>✅ Use State</button>
+    </div>
   </div>
   
   <script type="module" src="/src/main.js"></script>

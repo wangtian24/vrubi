@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VRubi - Rubik's Cube Video Solver</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header {
+      padding: 1rem 2rem;
+      background: #16213e;
+      border-bottom: 1px solid #0f3460;
+    }
+    
+    header h1 {
+      font-size: 1.5rem;
+      color: #e94560;
+    }
+    
+    header p {
+      font-size: 0.875rem;
+      opacity: 0.7;
+    }
+    
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    
+    #cube-container {
+      width: 100%;
+      max-width: 600px;
+      aspect-ratio: 1;
+      background: #0f0f1a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    #controls {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.5rem;
+      background: #16213e;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    button {
+      background: #e94560;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: #ff6b6b;
+    }
+    
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+    
+    #status {
+      position: fixed;
+      top: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(22, 33, 62, 0.95);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      display: none;
+    }
+    
+    #status.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎲 VRubi</h1>
+    <p>Video-to-Rubik's Cube Solver</p>
+  </header>
+  
+  <main>
+    <div id="cube-container"></div>
+  </main>
+  
+  <div id="status"></div>
+  
+  <div id="controls">
+    <button id="btn-scramble">🔀 Scramble</button>
+    <button id="btn-solve">✨ Solve</button>
+    <button id="btn-reset">🔄 Reset</button>
+  </div>
+  
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

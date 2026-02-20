@@ -1,0 +1,28 @@
+{
+  "name": "vrubi",
+  "version": "1.0.0",
+  "description": "Video-to-Rubik's Cube Solver",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "lint": "eslint src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangtian24/vrubi.git"
+  },
+  "keywords": ["rubiks-cube", "solver", "vision", "threejs"],
+  "author": "Tian Wang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wangtian24/vrubi/issues"
+  },
+  "homepage": "https://github.com/wangtian24/vrubi#readme",
+  "devDependencies": {
+    "three": "^0.172.0",
+    "vite": "^6.2.0"
+  }
+}

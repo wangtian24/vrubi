@@ -7,7 +7,7 @@
  */
 
 import { CubeRenderer } from './render/index.js';
-import { initSolver, solve, scramble, isSolverReady } from './solver/index.js';
+import { initSolver, solve, scramble, isSolverReady, solveFromState, inverseMoves } from './solver/index.js';
 import { CameraCapture } from './camera/index.js';
 import { CubeDetector, ColorExtractor, StateBuilder, StateValidator, drawDetectionOverlay, debugDrawSamples } from './vision/index.js';
 
@@ -303,12 +303,46 @@ btnUseState.addEventListener('click', async () => {
     console.warn('Validation warnings:', validation.warnings);
   }
   
+  // Stop camera
+  if (camera && camera.isCapturing) {
+    camera.stop();
+    btnStartCamera.textContent = '📷 Start Camera';
+    btnCapture.disabled = true;
+  }
+  
   // Switch to cube mode
   switchMode('cube');
   
-  // TODO: Set cube state from scanned state
-  // For now, just show message
-  showStatus('Scanned state ready! (State transfer coming soon)');
+  // Convert scanned state to scramble moves
+  const stateStr = stateBuilder.getStateString();
+  
+  if (isSolverReady()) {
+    try {
+      showStatus('Computing solution...', 0);
+      
+      // Solve from the scanned state
+      const solution = solveFromState(stateStr);
+      
+      if (solution.length === 0) {
+        showStatus('Cube is already solved! 🎉');
+        return;
+      }
+      
+      // Get the inverse to set up the cube visually
+      // (We scramble the visual cube to match the scanned state)
+      const setupMoves = inverseMoves(solution);
+      currentScramble = setupMoves;
+      
+      await renderer.playMoves(setupMoves);
+      
+      showStatus(`State loaded! ${solution.length} moves to solve.`);
+    } catch (error) {
+      console.error('Failed to set state:', error);
+      showStatus('Failed to load state. Invalid cube configuration.');
+    }
+  } else {
+    showStatus('Solver not ready. Try again.');
+  }
 });
 
 // ====== Initialize ======

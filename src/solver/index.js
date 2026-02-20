@@ -160,3 +160,41 @@ export function validateMoves(moves) {
   
   return moves.every(move => validMoves.has(move));
 }
+
+/**
+ * Solve cube from a facelet state string
+ * @param {string} faceletStr - 54-character facelet state (URFDLB order, our format)
+ * @returns {string[]} Solution moves
+ */
+export function solveFromState(faceletStr) {
+  if (!solverReady || !Cube) {
+    throw new Error('Solver not initialized. Call initSolver() first.');
+  }
+  
+  // Convert our format (URFDLB) to cubejs format if needed
+  // cubejs uses: U R F D L B (same order)
+  // Our colors: W=U, R=R, G=F, Y=D, O=L, B=B
+  
+  // Map color letters to face letters for cubejs
+  const colorToFace = { 'W': 'U', 'R': 'R', 'G': 'F', 'Y': 'D', 'O': 'L', 'B': 'B' };
+  const cubejsState = faceletStr.split('').map(c => colorToFace[c] || c).join('');
+  
+  try {
+    // Create cube from facelet string
+    const cube = Cube.fromString(cubejsState);
+    
+    if (cube.isSolved()) {
+      return [];
+    }
+    
+    const solutionStr = cube.solve();
+    if (!solutionStr) {
+      throw new Error('No solution found');
+    }
+    
+    return parseMoves(solutionStr);
+  } catch (error) {
+    console.error('Failed to solve from state:', error);
+    throw error;
+  }
+}

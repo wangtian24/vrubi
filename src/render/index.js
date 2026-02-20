@@ -113,7 +113,8 @@ export class CubeRenderer {
   async playMoves(moves) {
     for (const move of moves) {
       await this.animator.animateMove(move);
-      this.cube.applyMove(move);
+      // Note: animator handles the visual transformation
+      // No need to call cube.applyMove - the cubies are already moved
     }
     this.moveHistory.push(...moves);
   }

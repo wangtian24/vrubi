@@ -6,28 +6,27 @@
 
 import * as THREE from 'three';
 
-// Face definitions for rotation
+// Face definitions for rotation - using world axes
 const FACES = {
-  U: { axis: new THREE.Vector3(0, 1, 0), layer: 1, axisName: 'y' },
-  D: { axis: new THREE.Vector3(0, -1, 0), layer: -1, axisName: 'y' },
-  R: { axis: new THREE.Vector3(1, 0, 0), layer: 1, axisName: 'x' },
-  L: { axis: new THREE.Vector3(-1, 0, 0), layer: -1, axisName: 'x' },
-  F: { axis: new THREE.Vector3(0, 0, 1), layer: 1, axisName: 'z' },
-  B: { axis: new THREE.Vector3(0, 0, -1), layer: -1, axisName: 'z' },
+  U: { axis: 'y', layer: 1, direction: -1 },   // Up: rotate around Y, layer y=1
+  D: { axis: 'y', layer: -1, direction: 1 },   // Down: rotate around Y, layer y=-1
+  R: { axis: 'x', layer: 1, direction: -1 },   // Right: rotate around X, layer x=1
+  L: { axis: 'x', layer: -1, direction: 1 },   // Left: rotate around X, layer x=-1
+  F: { axis: 'z', layer: 1, direction: -1 },   // Front: rotate around Z, layer z=1
+  B: { axis: 'z', layer: -1, direction: 1 },   // Back: rotate around Z, layer z=-1
 };
 
 export class CubeAnimator {
   constructor(cube) {
     this.cube = cube;
     this.isAnimating = false;
-    this.animationQueue = [];
     this.currentAnimation = null;
-    this.animationSpeed = 5; // Radians per second
+    this.animationDuration = 200; // milliseconds per move
   }
   
   /**
    * Animate a single move
-   * @param {string} move - Move notation
+   * @param {string} move - Move notation (e.g., "R", "U'", "F2")
    * @returns {Promise} Resolves when animation completes
    */
   animateMove(move) {
@@ -43,19 +42,20 @@ export class CubeAnimator {
         return;
       }
       
-      // Determine rotation angle
-      let targetAngle = Math.PI / 2;
+      // Determine total rotation angle
+      let targetAngle = (Math.PI / 2) * faceInfo.direction;
       if (isPrime) targetAngle = -targetAngle;
       if (isDouble) targetAngle *= 2;
       
       // Get cubies in this layer
       const cubies = this.cube.getCubiesInLayer(face);
       
-      // Create pivot group for rotation
+      // Create pivot group for rotation at origin
       const pivot = new THREE.Group();
+      pivot.position.set(0, 0, 0);
       this.cube.group.add(pivot);
       
-      // Move cubies to pivot
+      // Attach cubies to pivot (preserves world position)
       cubies.forEach(cubie => {
         pivot.attach(cubie);
       });
@@ -63,9 +63,11 @@ export class CubeAnimator {
       this.currentAnimation = {
         pivot,
         cubies,
-        axis: faceInfo.axis.clone(),
+        axis: faceInfo.axis,
         targetAngle,
         currentAngle: 0,
+        startTime: performance.now(),
+        duration: this.animationDuration * (isDouble ? 1.5 : 1),
         resolve
       };
       
@@ -80,41 +82,70 @@ export class CubeAnimator {
     if (!this.isAnimating || !this.currentAnimation) return;
     
     const anim = this.currentAnimation;
-    const delta = (1 / 60) * this.animationSpeed; // Approximate 60fps
-    const step = Math.sign(anim.targetAngle) * Math.min(delta, Math.abs(anim.targetAngle - anim.currentAngle));
+    const elapsed = performance.now() - anim.startTime;
+    const progress = Math.min(elapsed / anim.duration, 1);
     
-    if (Math.abs(anim.currentAngle) >= Math.abs(anim.targetAngle) - 0.001) {
-      // Animation complete - snap to final position
-      const remaining = anim.targetAngle - anim.currentAngle;
-      anim.pivot.rotateOnAxis(anim.axis, remaining);
-      
-      // Move cubies back to main group
-      anim.cubies.forEach(cubie => {
-        this.cube.group.attach(cubie);
-        // Snap position to grid
-        cubie.position.x = Math.round(cubie.position.x);
-        cubie.position.y = Math.round(cubie.position.y);
-        cubie.position.z = Math.round(cubie.position.z);
-      });
-      
-      // Remove pivot
-      this.cube.group.remove(anim.pivot);
-      
-      this.isAnimating = false;
-      this.currentAnimation = null;
-      anim.resolve();
-    } else {
-      // Continue animation
-      anim.pivot.rotateOnAxis(anim.axis, step);
-      anim.currentAngle += step;
+    // Ease-out animation
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const newAngle = anim.targetAngle * eased;
+    const deltaAngle = newAngle - anim.currentAngle;
+    
+    // Apply rotation around the appropriate axis
+    if (anim.axis === 'x') {
+      anim.pivot.rotation.x += deltaAngle;
+    } else if (anim.axis === 'y') {
+      anim.pivot.rotation.y += deltaAngle;
+    } else if (anim.axis === 'z') {
+      anim.pivot.rotation.z += deltaAngle;
+    }
+    
+    anim.currentAngle = newAngle;
+    
+    if (progress >= 1) {
+      // Animation complete - finalize
+      this.finalizeAnimation();
     }
   }
   
   /**
-   * Set animation speed
-   * @param {number} speed - Radians per second
+   * Finalize animation - snap positions and cleanup
    */
-  setSpeed(speed) {
-    this.animationSpeed = speed;
+  finalizeAnimation() {
+    const anim = this.currentAnimation;
+    if (!anim) return;
+    
+    // Move cubies back to main group
+    anim.cubies.forEach(cubie => {
+      // Get world position before detaching
+      const worldPos = new THREE.Vector3();
+      cubie.getWorldPosition(worldPos);
+      
+      // Get world quaternion before detaching
+      const worldQuat = new THREE.Quaternion();
+      cubie.getWorldQuaternion(worldQuat);
+      
+      // Detach from pivot, attach to cube group
+      this.cube.group.attach(cubie);
+      
+      // Snap position to integer grid
+      cubie.position.x = Math.round(cubie.position.x);
+      cubie.position.y = Math.round(cubie.position.y);
+      cubie.position.z = Math.round(cubie.position.z);
+    });
+    
+    // Remove pivot
+    this.cube.group.remove(anim.pivot);
+    
+    this.isAnimating = false;
+    this.currentAnimation = null;
+    anim.resolve();
+  }
+  
+  /**
+   * Set animation duration
+   * @param {number} ms - Duration in milliseconds
+   */
+  setDuration(ms) {
+    this.animationDuration = ms;
   }
 }
